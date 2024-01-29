@@ -1,39 +1,39 @@
 node {
-     def aws_region params.aws_region
-     def terraform_action params.terraform_action
+    def aws_region = params.aws_region
+    def terraform_action = params.terraform_action
 
-stage("Checkout") {
-     checkout scm
-}
+    stage("Checkout") {
+        checkout scm
+    }
 
-stage("Execute Terraform"){
-                        echo "======== Initiating terraform action: ${terraform_action}"
-                        echo "===== Starting Terraform init"
-def tf_init_out = sh script: 'cd terraform; /usr/bin/terraform init'
-println tf_init_out
-echo "==================d Terraform init executed"
+    stage("Execute Terraform") {
+        echo "======== Initiating terraform action: ${terraform_action}"
+        echo "===== Starting Terraform init"
+        def tf_init_out = sh(script: 'cd terraform && /usr/bin/terraform init', returnStdout: true).trim()
+        println tf_init_out
+        echo "================== Terraform init executed"
 
-if (terraform_action == "plan"){
-    echo "=========== Starting Terraform plan for ${aws_region}"
-    def tf_plan_out sh script: "cd terraform; /usr/bin/terraform plan var \'aws_region=${aws_region}\'"
-    println tf_plan_out
-    echo "========== Terraform plan executed"
+        if (terraform_action == "plan") {
+            echo "=========== Starting Terraform plan for ${aws_region}"
+            def tf_plan_out = sh(script: "cd terraform && /usr/bin/terraform plan -var 'aws_region=${aws_region}'", returnStdout: true).trim()
+            println tf_plan_out
+            echo "========== Terraform plan executed"
 
-}else if (terraform_action == "apply"){
-    echo "============== Starting Terraform apply"
-    def tf_apply_out sh script: "cd terraform; /usr/bin/terraform apply --auto-approve -var \'aws_region=${aws_region}\'"
-    println tf_apply_out 
-    echo "======== Terraform apply executed"
+        } else if (terraform_action == "apply") {
+            echo "============== Starting Terraform apply"
+            def tf_apply_out = sh(script: "cd terraform && /usr/bin/terraform apply --auto-approve -var 'aws_region=${aws_region}'", returnStdout: true).trim()
+            println tf_apply_out
+            echo "======== Terraform apply executed"
 
-} else if (terraform_action == "destroy"){
-    echo "============= Starting Terraform destroy"
-    def tf_destroy_out sh script: "cd terraform; /usr/bin/terraform destroy --auto-approve -var \'aws_region=${aws_region}\'"
-    println tf_destroy_out
-    echo "============= Terraform destroy executed"
+        } else if (terraform_action == "destroy") {
+            echo "============= Starting Terraform destroy"
+            def tf_destroy_out = sh(script: "cd terraform && /usr/bin/terraform destroy --auto-approve -var 'aws_region=${aws_region}'", returnStdout: true).trim()
+            println tf_destroy_out
+            echo "============= Terraform destroy executed"
 
-} else {
-    echo "=============== Nothing to do exiting"
-}
-    echo "=============== Ending Terraform execution"
- }
+        } else {
+            echo "=============== Nothing to do, exiting"
+        }
+        echo "=============== Ending Terraform execution"
+    }
 }
